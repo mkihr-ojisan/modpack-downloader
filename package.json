@@ -1,0 +1,21 @@
+{
+  "name": "modpack-downloader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "mkihr-ojisan",
+  "license": "MIT",
+  "dependencies": {
+    "jszip": "^3.6.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.8",
+    "eslint": "^7.21.0",
+    "typescript": "^4.2.3"
+  },
+  "type": "module"
+}
