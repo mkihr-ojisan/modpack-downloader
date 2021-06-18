@@ -87,13 +87,19 @@ async function expandOverrides(modpack, targetDir) {
     }
 }
 (async () => {
-    const args = parseCommandLineArgs();
-    const modpackInfo = await fetchModFileInfo(args.addonId, args.fileId);
-    process.stderr.write(`Modpack name: ${modpackInfo.displayName}\n`);
-    process.stderr.write('Downloading modpack zip...');
-    const modpack = await downloadModpack(modpackInfo);
-    process.stderr.write('done\n');
-    await downloadMods(modpack, args.targetDir);
-    await expandOverrides(modpack, args.targetDir);
-    process.stderr.write('Finish!\n');
+    try {
+        const args = parseCommandLineArgs();
+        const modpackInfo = await fetchModFileInfo(args.addonId, args.fileId);
+        process.stderr.write(`Modpack name: ${modpackInfo.displayName}\n`);
+        process.stderr.write('Downloading modpack zip...');
+        const modpack = await downloadModpack(modpackInfo);
+        process.stderr.write('done\n');
+        await downloadMods(modpack, args.targetDir);
+        await expandOverrides(modpack, args.targetDir);
+        process.stderr.write('Finish!\n');
+    }
+    catch (e) {
+        console.error(e);
+        console.error(e.stack);
+    }
 })();
