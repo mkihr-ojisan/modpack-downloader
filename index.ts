@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 import JSZip from "jszip";
 import fs from "fs";
 import { dirname, join } from "path";
+import promiseLimit from "promise-limit";
 
 async function fetchJSON(url: string) {
   return await (await fetch(url)).json();
@@ -53,6 +54,7 @@ async function downloadModpack(modpackInfo: ModFileInfo) {
   return modpackZip;
 }
 
+const downloadLimit = promiseLimit(6);
 async function downloadMods(modpack: JSZip, targetDir: string) {
   await fs.promises.mkdir(join(targetDir, "mods"), { recursive: true });
 
@@ -67,27 +69,28 @@ async function downloadMods(modpack: JSZip, targetDir: string) {
 
   let downloadedCount = 0;
   const promises = manifest.files.map(
-    async ({ projectID: projectId, fileID: fileId }) => {
-      const modInfo = await fetchModFileInfo(projectId, fileId);
+    ({ projectID: projectId, fileID: fileId }) =>
+      downloadLimit(async () => {
+        const modInfo = await fetchModFileInfo(projectId, fileId);
 
-      const stream = (await fetch(modInfo.downloadUrl)).body;
-      const file = fs.createWriteStream(
-        join(targetDir, "mods", modInfo.fileName)
-      );
-      try {
-        await new Promise((resolve, reject) => {
-          stream.pipe(file);
-          file.on("finish", resolve);
-          stream.on("error", reject);
-        });
-      } finally {
-        file.close();
-      }
+        const stream = (await fetch(modInfo.downloadUrl)).body;
+        const file = fs.createWriteStream(
+          join(targetDir, "mods", modInfo.fileName)
+        );
+        try {
+          await new Promise((resolve, reject) => {
+            stream.pipe(file);
+            file.on("finish", resolve);
+            stream.on("error", reject);
+          });
+        } finally {
+          file.close();
+        }
 
-      process.stderr.write(
-        `(${++downloadedCount}/${fileCount}) ${modInfo.displayName}\n`
-      );
-    }
+        process.stderr.write(
+          `(${++downloadedCount}/${fileCount}) ${modInfo.displayName}\n`
+        );
+      })
   );
 
   await Promise.all(promises);

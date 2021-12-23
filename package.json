@@ -10,7 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "jszip": "^3.6.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "promise-limit": "^2.7.0"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.5.8",
